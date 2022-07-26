@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .img-sedutor {
+      max-width: 500px;
+      margin: 20px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <input class="file-input" type="file">
+
+  <img class="img-sedutor" src="" alt="sedutor">
+
+  <script src="https://unpkg.com/merge-images"></script>
+  <script>
+    const fileInput = document.querySelector('.file-input')
+    const imgSedutor = document.querySelector('.img-sedutor')
+    const title = new Image
+    title.src = './title.png'
+
+    const titleFileReader = new FileReader
+
+
+    fileInput.onchange = (e) => {
+      const imgFileReader = new FileReader;
+      const [file] = e.target.files
+      imgFileReader.onload = () => {
+        const img = new Image
+
+        img.onload = () => {
+          const resizedImage = resizeImage(img, file.type, 500, 700)
+          const imgUrl = resizedImage.url
+          const imgWidth = resizedImage.width
+          const imgHeight = resizedImage.height
+          const titleUrl = resizeImage(title, 'png', imgWidth * 0.95, 200).url
+
+          mergeImages([
+            { src: imgUrl, x: 0, y: 0 },
+            { src: titleUrl, x: 5, y: imgHeight - (imgHeight * 0.1) }
+          ])
+            .then(b64 => {
+              imgSedutor.style.display = "block"
+              imgSedutor.src = b64
+            });
+        }
+        img.src = imgFileReader.result
+      }
+
+      imgFileReader.readAsDataURL(e.target.files[0])
+    }
+
+    function resizeImage (img, type, max_width, max_height) {
+      // Create your canvas
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
+      ctx.drawImage(img, 0, 0)
+
+      let width = img.width
+      let height = img.height
+
+      // Add the resizing logic
+      if (width > height) {
+        if (width > max_width) {
+          height *= max_width / width
+          width = max_width
+        }
+      } else {
+        if (height > max_height) {
+          width *= max_height / height
+          height = max_height
+        }
+      }
+
+      //Specify the resizing result
+      canvas.width = width
+      canvas.height = height
+      ctx.drawImage(img, 0, 0, width, height)
+
+      return {
+        url: canvas.toDataURL(type),
+        width,
+        height
+      }
+    }
+
+  </script>
+</body>
+
+</html>
